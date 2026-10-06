@@ -2,21 +2,42 @@ import { Retirada } from "../classes/retirada.js";
 import { funcionarios } from "./funcionarios.js";
 import { materiais } from "./materiais.js";
 
-const chave = "retiradas";
+const CHAVE = "almoxarifado.retiradas";
 
 function carregarRetiradas() {
-    const texto = localStorage.getItem(chave);
+    let texto = localStorage.getItem(CHAVE);
+
+    if (!texto) {
+        texto = localStorage.getItem("retiradas");
+        if (texto) localStorage.setItem(CHAVE, texto);
+    }
+
     if (!texto) return [];
 
-    return JSON.parse(texto)
-        .map(d => {
-            const funcionario = funcionarios.find(f => f.id == d.funcionarioId);
-            const material = materiais.find(m => m.id == d.materialId);
-            if (!funcionario || !material) return null;
+    try {
+        const dados = JSON.parse(texto);
+        if (!Array.isArray(dados)) return [];
 
-            return new Retirada(funcionario, material, d.quantidade, d.data, d.id);
-        })
-        .filter(r => r !== null);
+        return dados
+            .map(d => {
+                const funcionario = funcionarios.find(f => f.id === Number(d.funcionarioId));
+                const material = materiais.find(m => m.id === Number(d.materialId));
+
+                if (!funcionario || !material) return null;
+
+                return new Retirada(
+                    funcionario,
+                    material,
+                    Number(d.quantidade),
+                    d.data,
+                    Number(d.id)
+                );
+            })
+            .filter(Boolean);
+    } catch {
+        localStorage.removeItem(CHAVE);
+        return [];
+    }
 }
 
 export const retiradas = carregarRetiradas();
@@ -29,5 +50,14 @@ export function salvarRetiradas() {
         quantidade: r.quantidade,
         data: r.data
     }));
-    localStorage.setItem(chave, JSON.stringify(dados));
+
+    localStorage.setItem(CHAVE, JSON.stringify(dados));
+}
+
+export function funcionarioPossuiRetiradas(id) {
+    return retiradas.some(r => r.funcionario?.id === Number(id));
+}
+
+export function materialPossuiRetiradas(id) {
+    return retiradas.some(r => r.material?.id === Number(id));
 }

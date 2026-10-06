@@ -1,3 +1,3 @@
-import { iniciarMateriais } from "./interface-materiais.js";
+import { iniciarMateriais } from "./interface/materiais.js";
 
 iniciarMateriais();

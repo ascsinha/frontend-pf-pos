@@ -1,3 +1,3 @@
-import { iniciarFuncionarios } from "./interface-funcionarios.js";
+import { iniciarFuncionarios } from "./interface/funcionarios.js";
 
 iniciarFuncionarios();

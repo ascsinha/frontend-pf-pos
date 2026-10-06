@@ -7,8 +7,13 @@ export class Material {
     #quantidade;
     #bloqueado;
 
-    constructor(codigo, nome, quantidade = 0, bloqueado = false) {
-        this.#id = Material.proximoId++;
+    constructor(codigo, nome, quantidade = 0, bloqueado = false, id = null) {
+        if (id === null || id === undefined) {
+            this.#id = Material.proximoId++;
+        } else {
+            this.#id = Number(id);
+            Material.proximoId = Math.max(Material.proximoId, this.#id + 1);
+        }
         this.#codigo = codigo;
         this.#nome = nome;
         this.#quantidade = Number(quantidade);
