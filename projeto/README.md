@@ -1,8 +1,8 @@
 # escritorio_api_pos
 Estudo de Caso: Controle de Retirada de Materiais de Escritório
-Estudo de Caso: Controle de Retirada de Materiais de Escritório 
 
 # Nome do Sistema
+ESTOKA - Sistema Integrado de Gerenciamento de Almoxarifado e Controle de Estoque
 
 ## Identificação
 
