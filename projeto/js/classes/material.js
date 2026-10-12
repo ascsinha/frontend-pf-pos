@@ -1,12 +1,14 @@
+import { escapeHtml } from "../utils.js";
+ 
 export class Material {
     static proximoId = 1;
-
+ 
     #id;
     #codigo;
     #nome;
     #quantidade;
     #bloqueado;
-
+ 
     constructor(codigo, nome, quantidade = 0, bloqueado = false, id = null) {
         if (id === null || id === undefined) {
             this.#id = Material.proximoId++;
@@ -19,65 +21,65 @@ export class Material {
         this.#quantidade = Number(quantidade);
         this.#bloqueado = Boolean(bloqueado);
     }
-
+ 
     get id() {
         return this.#id;
     }
-
+ 
     get codigo() {
         return this.#codigo;
     }
-
+ 
     set codigo(valor) {
         this.#codigo = valor;
     }
-
+ 
     get nome() {
         return this.#nome;
     }
-
+ 
     set nome(valor) {
         this.#nome = valor;
     }
-
+ 
     get quantidade() {
         return this.#quantidade;
     }
-
+ 
     set quantidade(valor) {
         this.#quantidade = Number(valor);
     }
-
+ 
     get bloqueado() {
         return this.#bloqueado;
     }
-
+ 
     set bloqueado(valor) {
         this.#bloqueado = Boolean(valor);
     }
-
+ 
     get statusTexto() {
         return this.#bloqueado ? "Bloqueado" : "Não bloqueado";
     }
-
+ 
     get statusClasse() {
         return this.#bloqueado ? "status-bloqueado" : "status-liberado";
     }
-
+ 
     get quantidadeClasse() {
         if (this.#quantidade === 0) return "qtd-zero";
         if (this.#quantidade <= 10) return "qtd-baixa";
         if (this.#quantidade <= 40) return "qtd-media";
         return "qtd-alta";
     }
-
+ 
     render() {
         const linha = document.createElement("tr");
         linha.dataset.id = this.id;
-
+ 
         linha.innerHTML = `
-            <td><span class="codigo-cell">${this.codigo}</span></td>
-            <td><span class="mat-nome">${this.nome}</span></td>
+            <td><span class="codigo-cell">${escapeHtml(this.codigo)}</span></td>
+            <td><span class="mat-nome">${escapeHtml(this.nome)}</span></td>
             <td><span class="qtd-cell ${this.quantidadeClasse}">${this.quantidade}</span></td>
             <td>
                 <button class="status-badge ${this.statusClasse}" type="button">
@@ -105,7 +107,7 @@ export class Material {
                 </div>
             </td>
         `;
-
+ 
         return linha;
     }
 }

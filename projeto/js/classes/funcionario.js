@@ -1,61 +1,68 @@
+import { escapeHtml } from "../utils.js";
+ 
 export class Funcionario {
     static proximoId = 1;
-
+ 
     #id;
     #matricula;
     #nome;
     #bloqueado;
-
-    constructor(matricula, nome, bloqueado = false) {
-        this.#id = Funcionario.proximoId++;
+ 
+    constructor(matricula, nome, bloqueado = false, id = null) {
+        if (id === null || id === undefined) {
+            this.#id = Funcionario.proximoId++;
+        } else {
+            this.#id = Number(id);
+            Funcionario.proximoId = Math.max(Funcionario.proximoId, this.#id + 1);
+        }
         this.#matricula = matricula;
         this.#nome = nome;
         this.#bloqueado = Boolean(bloqueado);
     }
-
+ 
     get id() {
         return this.#id;
     }
-
+ 
     get matricula() {
         return this.#matricula;
     }
-
+ 
     set matricula(valor) {
         this.#matricula = valor;
     }
-
+ 
     get nome() {
         return this.#nome;
     }
-
+ 
     set nome(valor) {
         this.#nome = valor;
     }
-
+ 
     get bloqueado() {
         return this.#bloqueado;
     }
-
+ 
     set bloqueado(valor) {
         this.#bloqueado = Boolean(valor);
     }
-
+ 
     get statusTexto() {
         return this.#bloqueado ? "Bloqueado" : "Não bloqueado";
     }
-
+ 
     get statusClasse() {
         return this.#bloqueado ? "status-bloqueado" : "status-ativo";
     }
-
+ 
     render() {
         const linha = document.createElement("tr");
         linha.dataset.id = this.id;
-
+ 
         linha.innerHTML = `
-            <td><span class="matricula-cell">${this.matricula}</span></td>
-            <td><span class="func-nome">${this.nome}</span></td>
+            <td><span class="matricula-cell">${escapeHtml(this.matricula)}</span></td>
+            <td><span class="func-nome">${escapeHtml(this.nome)}</span></td>
             <td>
                 <button class="status-badge ${this.statusClasse}" type="button">
                     <span class="status-dot"></span>${this.statusTexto}
@@ -82,7 +89,7 @@ export class Funcionario {
                 </div>
             </td>
         `;
-
+ 
         return linha;
     }
 }
