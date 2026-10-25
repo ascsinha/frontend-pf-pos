@@ -1,6 +1,8 @@
 import { Funcionario } from "../classes/funcionario.js";
 import { funcionarios, salvarFuncionarios } from "../dados/funcionarios.js";
 import { funcionarioPossuiRetiradas } from "../dados/retiradas.js";
+import { escapeHtml } from "../utils.js";
+import { criarLinhaFuncionario, criarLinhaVazia } from "./componentes.js";
 
 const corpoTabela = document.querySelector("#tabela-funcionarios tbody");
 const contadorTexto = document.querySelector("#contador-funcionarios");
@@ -17,15 +19,6 @@ const botoesFiltro = document.querySelectorAll("#filtros-funcionario .filter-btn
 let filtroAtual = "todos";
 let buscaAtual = "";
 let idEmEdicao = null;
-
-function escapar(valor) {
-    return String(valor)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-}
 
 function funcionariosFiltrados() {
     return funcionarios.filter(funcionario => {
@@ -48,9 +41,9 @@ function renderizarLista() {
 
     const lista = funcionariosFiltrados();
     if (lista.length === 0) {
-        corpoTabela.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:24px;">Nenhum funcionário encontrado.</td></tr>`;
+        corpoTabela.append(criarLinhaVazia("Nenhum funcionário encontrado.", 4));
     } else {
-        lista.forEach(funcionario => corpoTabela.append(funcionario.render()));
+        lista.forEach(funcionario => corpoTabela.append(criarLinhaFuncionario(funcionario)));
     }
 
     if (contadorTexto) {
@@ -129,7 +122,7 @@ function visualizarFuncionario(id) {
     if (!funcionario) return;
 
     alert(
-        `Funcionário\n\nMatrícula: ${escapar(funcionario.matricula)}\nNome: ${escapar(funcionario.nome)}\nStatus: ${funcionario.statusTexto}`
+        `Funcionário\n\nMatrícula: ${escapeHtml(funcionario.matricula)}\nNome: ${escapeHtml(funcionario.nome)}\nStatus: ${funcionario.statusTexto}`
     );
 }
 

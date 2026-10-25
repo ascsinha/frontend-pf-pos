@@ -2,6 +2,7 @@ import { Retirada } from "../classes/retirada.js";
 import { retiradas, salvarRetiradas } from "../dados/retiradas.js";
 import { funcionarios } from "../dados/funcionarios.js";
 import { materiais, salvarMateriais } from "../dados/materiais.js";
+import { criarLinhaRetirada, criarLinhaVazia } from "./componentes.js";
 
 const corpoTabela = document.querySelector("#tabela-retiradas tbody");
 const contadorTexto = document.querySelector("#contador-retiradas");
@@ -51,9 +52,9 @@ function renderizarLista() {
     corpoTabela.innerHTML = "";
 
     if (retiradas.length === 0) {
-        corpoTabela.innerHTML = `<tr class="empty-row"><td colspan="5">Nenhuma retirada registrada.</td></tr>`;
+        corpoTabela.append(criarLinhaVazia("Nenhuma retirada registrada.", 5, "empty-row"));
     } else {
-        [...retiradas].reverse().forEach(r => corpoTabela.append(r.render()));
+        [...retiradas].reverse().forEach(r => corpoTabela.append(criarLinhaRetirada(r)));
     }
 
     if (contadorTexto) contadorTexto.textContent = `${retiradas.length} retiradas registradas`;

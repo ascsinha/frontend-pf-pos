@@ -1,6 +1,7 @@
 import { Material } from "../classes/material.js";
 import { materiais, salvarMateriais } from "../dados/materiais.js";
 import { materialPossuiRetiradas } from "../dados/retiradas.js";
+import { criarLinhaMaterial, criarLinhaVazia } from "./componentes.js";
 
 const corpoTabela = document.querySelector("#tabela-materiais tbody");
 const contadorTexto = document.querySelector("#contador-materiais");
@@ -40,9 +41,9 @@ function renderizarLista() {
 
     const lista = materiaisFiltrados();
     if (lista.length === 0) {
-        corpoTabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:24px;">Nenhum material encontrado.</td></tr>`;
+        corpoTabela.append(criarLinhaVazia("Nenhum material encontrado.", 5));
     } else {
-        lista.forEach(material => corpoTabela.append(material.render()));
+        lista.forEach(material => corpoTabela.append(criarLinhaMaterial(material)));
     }
 
     if (contadorTexto) contadorTexto.textContent = `${materiais.length} materiais cadastrados`;
