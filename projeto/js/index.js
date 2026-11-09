@@ -1,7 +1,8 @@
-import { materiais } from "./dados/materiais.js";
-import { funcionarios } from "./dados/funcionarios.js";
-import { retiradas } from "./dados/retiradas.js";
+import { listarMateriais } from "./api/materiais.js";
+import { listarFuncionarios } from "./api/funcionarios.js";
+import { listarRetiradas } from "./api/retiradas.js";
 import { criarItemRetirada, criarMensagemVazia } from "./interface/componentes.js";
+import { mostrarErro } from "./interface/mensagens.js";
 
 const LIMITE_ULTIMAS = 6;
 const LIMITE_ESTOQUE_BAIXO = 10;
@@ -20,7 +21,7 @@ function plural(quantidade, singular, plural) {
     return `${quantidade} ${quantidade === 1 ? singular : plural}`;
 }
 
-function renderizarUltimasRetiradas() {
+function renderizarUltimasRetiradas(retiradas) {
     if (!listaUltimas) return;
     listaUltimas.innerHTML = "";
 
@@ -35,7 +36,7 @@ function renderizarUltimasRetiradas() {
         .forEach(retirada => listaUltimas.append(criarItemRetirada(retirada)));
 }
 
-function atualizarDashboard() {
+function atualizarDashboard({ materiais, funcionarios, retiradas }) {
     if (statTotalProdutos) statTotalProdutos.textContent = materiais.length;
 
     if (statEmEstoque) {
@@ -70,7 +71,39 @@ function atualizarDashboard() {
             `${plural(retiradas.length, "retirada registrada", "retiradas registradas")}. Clique para registrar.`;
     }
 
-    renderizarUltimasRetiradas();
+    renderizarUltimasRetiradas(retiradas);
 }
 
-atualizarDashboard();
+function mostrarFalhaDeCarga() {
+    [statTotalProdutos, statEmEstoque, statEstoqueBaixo, statTotalRetiradas, statUnidadesRetiradas]
+        .forEach(elemento => { if (elemento) elemento.textContent = "—"; });
+
+    if (listaUltimas) {
+        listaUltimas.innerHTML = "";
+        listaUltimas.append(
+            criarMensagemVazia("Não foi possível carregar os dados. Verifique o servidor e recarregue a página.")
+        );
+    }
+}
+
+async function carregarDashboard() {
+    if (listaUltimas) {
+        listaUltimas.innerHTML = "";
+        listaUltimas.append(criarMensagemVazia("Carregando dados..."));
+    }
+
+    try {
+        const [funcionarios, materiais] = await Promise.all([
+            listarFuncionarios(),
+            listarMateriais()
+        ]);
+        const retiradas = await listarRetiradas(funcionarios, materiais);
+
+        atualizarDashboard({ materiais, funcionarios, retiradas });
+    } catch (erro) {
+        mostrarFalhaDeCarga();
+        mostrarErro(`Não foi possível carregar os dados do painel. ${erro.message}`);
+    }
+}
+
+carregarDashboard();

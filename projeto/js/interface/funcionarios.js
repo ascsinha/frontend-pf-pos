@@ -1,8 +1,14 @@
 import { Funcionario } from "../classes/funcionario.js";
-import { funcionarios, salvarFuncionarios } from "../dados/funcionarios.js";
-import { funcionarioPossuiRetiradas } from "../dados/retiradas.js";
-import { escapeHtml } from "../utils.js";
+import {
+    listarFuncionarios,
+    cadastrarFuncionario,
+    atualizarFuncionario,
+    excluirFuncionario as excluirFuncionarioNaApi
+} from "../api/funcionarios.js";
+import { contarRetiradasDoFuncionario } from "../api/retiradas.js";
+import { escapeHtml, mesmoId } from "../utils.js";
 import { criarLinhaFuncionario, criarLinhaVazia } from "./componentes.js";
+import { mostrarErro, mostrarSucesso } from "./mensagens.js";
 
 const corpoTabela = document.querySelector("#tabela-funcionarios tbody");
 const contadorTexto = document.querySelector("#contador-funcionarios");
@@ -16,6 +22,8 @@ const campoBloqueado = document.querySelector("#funcionario-bloqueado");
 const campoBusca = document.querySelector("#busca-funcionario");
 const botoesFiltro = document.querySelectorAll("#filtros-funcionario .filter-btn, .filter-btn");
 
+let funcionarios = [];
+let estadoCarga = "carregando"; 
 let filtroAtual = "todos";
 let buscaAtual = "";
 let idEmEdicao = null;
@@ -39,6 +47,19 @@ function renderizarLista() {
     if (!corpoTabela) return;
     corpoTabela.innerHTML = "";
 
+    if (estadoCarga === "carregando") {
+        corpoTabela.append(criarLinhaVazia("Carregando funcionários...", 4));
+        return;
+    }
+
+    if (estadoCarga === "erro") {
+        corpoTabela.append(
+            criarLinhaVazia("Não foi possível carregar os funcionários. Verifique o servidor e recarregue a página.", 4)
+        );
+        if (contadorTexto) contadorTexto.textContent = "Dados indisponíveis";
+        return;
+    }
+
     const lista = funcionariosFiltrados();
     if (lista.length === 0) {
         corpoTabela.append(criarLinhaVazia("Nenhum funcionário encontrado.", 4));
@@ -48,6 +69,21 @@ function renderizarLista() {
 
     if (contadorTexto) {
         contadorTexto.textContent = `${funcionarios.length} funcionários cadastrados`;
+    }
+}
+
+async function carregarLista() {
+    try {
+        funcionarios = await listarFuncionarios();
+        estadoCarga = "pronto";
+        return true;
+    } catch (erro) {
+        estadoCarga = "erro";
+        funcionarios = [];
+        mostrarErro(`Não foi possível carregar os funcionários. ${erro.message}`);
+        return false;
+    } finally {
+        renderizarLista();
     }
 }
 
@@ -68,25 +104,41 @@ function preencherFormularioParaEdicao(funcionario) {
     formulario?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function criarFuncionario(dados) {
-    if (funcionarios.some(f => f.matricula.toLowerCase() === dados.matricula.toLowerCase())) {
+function matriculaDuplicada(matricula, idIgnorado = null) {
+    return funcionarios.some(
+        f => !mesmoId(f.id, idIgnorado) && f.matricula.toLowerCase() === matricula.toLowerCase()
+    );
+}
+
+async function criarFuncionario(dados) {
+    if (!(await carregarLista())) return false;
+
+    if (matriculaDuplicada(dados.matricula)) {
         alert("Já existe um funcionário com essa matrícula.");
         return false;
     }
 
-    funcionarios.push(new Funcionario(dados.matricula, dados.nome, dados.bloqueado));
-    salvarFuncionarios();
+    try {
+        await cadastrarFuncionario(new Funcionario(dados.matricula, dados.nome, dados.bloqueado));
+    } catch (erro) {
+        mostrarErro(`Não foi possível cadastrar o funcionário. ${erro.message}`);
+        return false;
+    }
+
+    mostrarSucesso("Funcionário cadastrado com sucesso.");
     return true;
 }
 
-function alterarFuncionario(id, dados) {
-    const funcionario = funcionarios.find(f => f.id === Number(id));
-    if (!funcionario) return false;
+async function alterarFuncionario(id, dados) {
+    if (!(await carregarLista())) return false;
 
-    const matriculaDuplicada = funcionarios.some(
-        f => f.id !== funcionario.id && f.matricula.toLowerCase() === dados.matricula.toLowerCase()
-    );
-    if (matriculaDuplicada) {
+    const funcionario = funcionarios.find(f => mesmoId(f.id, id));
+    if (!funcionario) {
+        mostrarErro("Este funcionário não existe mais no servidor.");
+        return false;
+    }
+
+    if (matriculaDuplicada(dados.matricula, funcionario.id)) {
         alert("Já existe outro funcionário com essa matrícula.");
         return false;
     }
@@ -94,31 +146,48 @@ function alterarFuncionario(id, dados) {
     funcionario.matricula = dados.matricula;
     funcionario.nome = dados.nome;
     funcionario.bloqueado = dados.bloqueado;
-    salvarFuncionarios();
+
+    try {
+        await atualizarFuncionario(funcionario);
+    } catch (erro) {
+        mostrarErro(`Não foi possível salvar as alterações do funcionário. ${erro.message}`);
+        return false;
+    }
+
+    mostrarSucesso("Funcionário atualizado com sucesso.");
     return true;
 }
 
-function excluirFuncionario(id) {
-    const indice = funcionarios.findIndex(f => f.id === Number(id));
-    if (indice === -1) return;
+async function excluirFuncionario(id) {
+    const funcionario = funcionarios.find(f => mesmoId(f.id, id));
+    if (!funcionario) return;
 
-    const funcionario = funcionarios[indice];
-
-    if (funcionarioPossuiRetiradas(funcionario.id)) {
-        alert(`Não é possível excluir o funcionário "${funcionario.nome}" porque existem retiradas associadas a ele.`);
+    try {
+        if ((await contarRetiradasDoFuncionario(funcionario.id)) > 0) {
+            alert(`Não é possível excluir o funcionário "${funcionario.nome}" porque existem retiradas associadas a ele.`);
+            return;
+        }
+    } catch (erro) {
+        mostrarErro(`Não foi possível verificar as retiradas do funcionário. ${erro.message}`);
         return;
     }
 
     if (!confirm(`Deseja realmente excluir o funcionário "${funcionario.nome}"?`)) return;
 
-    funcionarios.splice(indice, 1);
-    salvarFuncionarios();
-    limparFormulario();
-    renderizarLista();
+    try {
+        await excluirFuncionarioNaApi(funcionario.id);
+    } catch (erro) {
+        mostrarErro(`Não foi possível excluir o funcionário. ${erro.message}`);
+        return;
+    }
+
+    mostrarSucesso("Funcionário excluído com sucesso.");
+    if (mesmoId(idEmEdicao, funcionario.id)) limparFormulario();
+    await carregarLista();
 }
 
 function visualizarFuncionario(id) {
-    const funcionario = funcionarios.find(f => f.id === Number(id));
+    const funcionario = funcionarios.find(f => mesmoId(f.id, id));
     if (!funcionario) return;
 
     alert(
@@ -134,7 +203,7 @@ corpoTabela?.addEventListener("click", evento => {
     if (!id) return;
 
     if (botao.dataset.acao === "editar") {
-        const funcionario = funcionarios.find(f => f.id === Number(id));
+        const funcionario = funcionarios.find(f => mesmoId(f.id, id));
         if (funcionario) preencherFormularioParaEdicao(funcionario);
     }
 
@@ -142,7 +211,7 @@ corpoTabela?.addEventListener("click", evento => {
     if (botao.dataset.acao === "visualizar") visualizarFuncionario(id);
 });
 
-formulario?.addEventListener("submit", evento => {
+formulario?.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     const dados = {
@@ -156,13 +225,18 @@ formulario?.addEventListener("submit", evento => {
         return;
     }
 
-    const sucesso = idEmEdicao
-        ? alterarFuncionario(idEmEdicao, dados)
-        : criarFuncionario(dados);
+    if (botaoSalvar) botaoSalvar.disabled = true;
+    try {
+        const sucesso = idEmEdicao
+            ? await alterarFuncionario(idEmEdicao, dados)
+            : await criarFuncionario(dados);
 
-    if (sucesso) {
-        limparFormulario();
-        renderizarLista();
+        if (sucesso) {
+            limparFormulario();
+            await carregarLista();
+        }
+    } finally {
+        if (botaoSalvar) botaoSalvar.disabled = false;
     }
 });
 
@@ -182,6 +256,7 @@ botoesFiltro.forEach(botao => {
     });
 });
 
-export function iniciarFuncionarios() {
+export async function iniciarFuncionarios() {
     renderizarLista();
+    await carregarLista();
 }

@@ -1,0 +1,14 @@
+{
+    "name": "estoka-frontend",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "ESTOKA - Controle de Retirada de Materiais de Escritório (frontend + JSON Server)",
+    "scripts": {
+      "api": "json-server db.json",
+      "testar": "node testes/testar-api.mjs"
+    },
+    "devDependencies": {
+      "json-server": "^1.0.0-beta.15"
+    }
+  }  

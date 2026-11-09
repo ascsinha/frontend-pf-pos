@@ -1,7 +1,9 @@
 import { Material } from "../classes/material.js";
-import { materiais, salvarMateriais } from "../dados/materiais.js";
-import { materialPossuiRetiradas } from "../dados/retiradas.js";
+import { listarMateriais, cadastrarMaterial, atualizarMaterial, excluirMaterial as excluirMaterialNaApi } from "../api/materiais.js";
+import { contarRetiradasDoMaterial } from "../api/retiradas.js";
+import { mesmoId } from "../utils.js";
 import { criarLinhaMaterial, criarLinhaVazia } from "./componentes.js";
+import { mostrarErro, mostrarSucesso } from "./mensagens.js";
 
 const corpoTabela = document.querySelector("#tabela-materiais tbody");
 const contadorTexto = document.querySelector("#contador-materiais");
@@ -16,6 +18,8 @@ const campoBloqueado = document.querySelector("#material-bloqueado");
 const campoBusca = document.querySelector("#busca-material");
 const botoesFiltro = document.querySelectorAll("#filtros-material .filter-btn, .filter-btn");
 
+let materiais = [];
+let estadoCarga = "carregando"; 
 let filtroAtual = "todos";
 let buscaAtual = "";
 let idEmEdicao = null;
@@ -39,6 +43,19 @@ function renderizarLista() {
     if (!corpoTabela) return;
     corpoTabela.innerHTML = "";
 
+    if (estadoCarga === "carregando") {
+        corpoTabela.append(criarLinhaVazia("Carregando materiais...", 5));
+        return;
+    }
+
+    if (estadoCarga === "erro") {
+        corpoTabela.append(
+            criarLinhaVazia("Não foi possível carregar os materiais. Verifique o servidor e recarregue a página.", 5)
+        );
+        if (contadorTexto) contadorTexto.textContent = "Dados indisponíveis";
+        return;
+    }
+
     const lista = materiaisFiltrados();
     if (lista.length === 0) {
         corpoTabela.append(criarLinhaVazia("Nenhum material encontrado.", 5));
@@ -47,6 +64,21 @@ function renderizarLista() {
     }
 
     if (contadorTexto) contadorTexto.textContent = `${materiais.length} materiais cadastrados`;
+}
+
+async function carregarLista() {
+    try {
+        materiais = await listarMateriais();
+        estadoCarga = "pronto";
+        return true;
+    } catch (erro) {
+        estadoCarga = "erro";
+        materiais = [];
+        mostrarErro(`Não foi possível carregar os materiais. ${erro.message}`);
+        return false;
+    } finally {
+        renderizarLista();
+    }
 }
 
 function limparFormulario() {
@@ -67,25 +99,43 @@ function preencherFormularioParaEdicao(material) {
     formulario?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function criarMaterial(dados) {
-    if (materiais.some(m => m.codigo.toLowerCase() === dados.codigo.toLowerCase())) {
+function codigoDuplicado(codigo, idIgnorado = null) {
+    return materiais.some(
+        m => !mesmoId(m.id, idIgnorado) && m.codigo.toLowerCase() === codigo.toLowerCase()
+    );
+}
+
+async function criarMaterial(dados) {
+    if (!(await carregarLista())) return false;
+
+    if (codigoDuplicado(dados.codigo)) {
         alert("Já existe um material com esse código.");
         return false;
     }
 
-    materiais.push(new Material(dados.codigo, dados.nome, dados.quantidade, dados.bloqueado));
-    salvarMateriais();
+    try {
+        await cadastrarMaterial(
+            new Material(dados.codigo, dados.nome, dados.quantidade, dados.bloqueado)
+        );
+    } catch (erro) {
+        mostrarErro(`Não foi possível cadastrar o material. ${erro.message}`);
+        return false;
+    }
+
+    mostrarSucesso("Material cadastrado com sucesso.");
     return true;
 }
 
-function alterarMaterial(id, dados) {
-    const material = materiais.find(m => m.id === Number(id));
-    if (!material) return false;
+async function alterarMaterial(id, dados) {
+    if (!(await carregarLista())) return false;
 
-    const codigoDuplicado = materiais.some(
-        m => m.id !== material.id && m.codigo.toLowerCase() === dados.codigo.toLowerCase()
-    );
-    if (codigoDuplicado) {
+    const material = materiais.find(m => mesmoId(m.id, id));
+    if (!material) {
+        mostrarErro("Este material não existe mais no servidor.");
+        return false;
+    }
+
+    if (codigoDuplicado(dados.codigo, material.id)) {
         alert("Já existe outro material com esse código.");
         return false;
     }
@@ -94,31 +144,48 @@ function alterarMaterial(id, dados) {
     material.nome = dados.nome;
     material.quantidade = dados.quantidade;
     material.bloqueado = dados.bloqueado;
-    salvarMateriais();
+
+    try {
+        await atualizarMaterial(material);
+    } catch (erro) {
+        mostrarErro(`Não foi possível salvar as alterações do material. ${erro.message}`);
+        return false;
+    }
+
+    mostrarSucesso("Material atualizado com sucesso.");
     return true;
 }
 
-function excluirMaterial(id) {
-    const indice = materiais.findIndex(m => m.id === Number(id));
-    if (indice === -1) return;
+async function excluirMaterial(id) {
+    const material = materiais.find(m => mesmoId(m.id, id));
+    if (!material) return;
 
-    const material = materiais[indice];
-
-    if (materialPossuiRetiradas(material.id)) {
-        alert(`Não é possível excluir o material "${material.nome}" porque existem retiradas associadas a ele.`);
+    try {
+        if ((await contarRetiradasDoMaterial(material.id)) > 0) {
+            alert(`Não é possível excluir o material "${material.nome}" porque existem retiradas associadas a ele.`);
+            return;
+        }
+    } catch (erro) {
+        mostrarErro(`Não foi possível verificar as retiradas do material. ${erro.message}`);
         return;
     }
 
     if (!confirm(`Deseja realmente excluir o material "${material.nome}"?`)) return;
 
-    materiais.splice(indice, 1);
-    salvarMateriais();
-    limparFormulario();
-    renderizarLista();
+    try {
+        await excluirMaterialNaApi(material.id);
+    } catch (erro) {
+        mostrarErro(`Não foi possível excluir o material. ${erro.message}`);
+        return;
+    }
+
+    mostrarSucesso("Material excluído com sucesso.");
+    if (mesmoId(idEmEdicao, material.id)) limparFormulario();
+    await carregarLista();
 }
 
 function visualizarMaterial(id) {
-    const material = materiais.find(m => m.id === Number(id));
+    const material = materiais.find(m => mesmoId(m.id, id));
     if (!material) return;
 
     alert(
@@ -134,14 +201,14 @@ corpoTabela?.addEventListener("click", evento => {
     if (!id) return;
 
     if (botao.dataset.acao === "editar") {
-        const material = materiais.find(m => m.id === Number(id));
+        const material = materiais.find(m => mesmoId(m.id, id));
         if (material) preencherFormularioParaEdicao(material);
     }
     if (botao.dataset.acao === "excluir") excluirMaterial(id);
     if (botao.dataset.acao === "visualizar") visualizarMaterial(id);
 });
 
-formulario?.addEventListener("submit", evento => {
+formulario?.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     const quantidade = Number(campoQuantidade.value);
@@ -157,13 +224,18 @@ formulario?.addEventListener("submit", evento => {
         return;
     }
 
-    const sucesso = idEmEdicao
-        ? alterarMaterial(idEmEdicao, dados)
-        : criarMaterial(dados);
+    if (botaoSalvar) botaoSalvar.disabled = true;
+    try {
+        const sucesso = idEmEdicao
+            ? await alterarMaterial(idEmEdicao, dados)
+            : await criarMaterial(dados);
 
-    if (sucesso) {
-        limparFormulario();
-        renderizarLista();
+        if (sucesso) {
+            limparFormulario();
+            await carregarLista();
+        }
+    } finally {
+        if (botaoSalvar) botaoSalvar.disabled = false;
     }
 });
 
@@ -183,6 +255,7 @@ botoesFiltro.forEach(botao => {
     });
 });
 
-export function iniciarMateriais() {
+export async function iniciarMateriais() {
     renderizarLista();
+    await carregarLista();
 }

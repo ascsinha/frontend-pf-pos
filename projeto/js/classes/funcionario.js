@@ -1,18 +1,11 @@
 export class Funcionario {
-    static proximoId = 1;
-
     #id;
     #matricula;
     #nome;
     #bloqueado;
 
     constructor(matricula, nome, bloqueado = false, id = null) {
-        if (id === null || id === undefined) {
-            this.#id = Funcionario.proximoId++;
-        } else {
-            this.#id = Number(id);
-            Funcionario.proximoId = Math.max(Funcionario.proximoId, this.#id + 1);
-        }
+        this.#id = id ?? null;
         this.#matricula = matricula;
         this.#nome = nome;
         this.#bloqueado = Boolean(bloqueado);

@@ -1,6 +1,4 @@
 export class Retirada {
-    static proximoId = 1;
-
     #id;
     #funcionario;
     #material;
@@ -8,12 +6,7 @@ export class Retirada {
     #data;
 
     constructor(funcionario, material, quantidade, data = new Date().toISOString(), id = null) {
-        if (id === null || id === undefined) {
-            this.#id = Retirada.proximoId++;
-        } else {
-            this.#id = Number(id);
-            Retirada.proximoId = Math.max(Retirada.proximoId, this.#id + 1);
-        }
+        this.#id = id ?? null;
         this.#funcionario = funcionario;
         this.#material = material;
         this.#quantidade = Number(quantidade);

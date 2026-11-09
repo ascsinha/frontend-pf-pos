@@ -1,0 +1,182 @@
+{
+  "funcionarios": [
+    {
+      "id": "f1",
+      "matricula": "FUNC-001",
+      "nome": "Ana Silva",
+      "bloqueado": false
+    },
+    {
+      "id": "f2",
+      "matricula": "FUNC-002",
+      "nome": "Carlos Mendes",
+      "bloqueado": false
+    },
+    {
+      "id": "f3",
+      "matricula": "FUNC-003",
+      "nome": "Pedro Costa",
+      "bloqueado": true
+    },
+    {
+      "id": "f4",
+      "matricula": "FUNC-004",
+      "nome": "Mariana Oliveira",
+      "bloqueado": false
+    },
+    {
+      "id": "f5",
+      "matricula": "FUNC-005",
+      "nome": "João Santos",
+      "bloqueado": true
+    },
+    {
+      "id": "f6",
+      "matricula": "FUNC-006",
+      "nome": "Beatriz Almeida",
+      "bloqueado": false
+    },
+    {
+      "id": "f7",
+      "matricula": "FUNC-007",
+      "nome": "Rafael Lima",
+      "bloqueado": false
+    },
+    {
+      "id": "f8",
+      "matricula": "FUNC-008",
+      "nome": "Fernanda Souza",
+      "bloqueado": false
+    },
+    {
+      "matricula": "FUNC-009",
+      "nome": "João de Barro",
+      "bloqueado": false,
+      "id": "qWULVgy-v_o"
+    }
+  ],
+  "materiais": [
+    {
+      "id": "m1",
+      "codigo": "ESC-001",
+      "nome": "Papel Sulfite A4",
+      "quantidade": 85,
+      "bloqueado": false
+    },
+    {
+      "id": "m2",
+      "codigo": "ESC-002",
+      "nome": "Caneta Esferográfica",
+      "quantidade": 38,
+      "bloqueado": false
+    },
+    {
+      "id": "m3",
+      "codigo": "ESC-003",
+      "nome": "Lápis Preto nº 2",
+      "quantidade": 0,
+      "bloqueado": true
+    },
+    {
+      "id": "m4",
+      "codigo": "ESC-004",
+      "nome": "Borracha Branca",
+      "quantidade": 64,
+      "bloqueado": false
+    },
+    {
+      "id": "m5",
+      "codigo": "ESC-005",
+      "nome": "Grampeador",
+      "quantidade": 12,
+      "bloqueado": false
+    },
+    {
+      "id": "m6",
+      "codigo": "ESC-006",
+      "nome": "Grampo 26/6",
+      "quantidade": 7,
+      "bloqueado": false
+    },
+    {
+      "id": "m7",
+      "codigo": "ESC-007",
+      "nome": "Pasta Suspensa",
+      "quantidade": 34,
+      "bloqueado": true
+    },
+    {
+      "id": "m8",
+      "codigo": "ESC-008",
+      "nome": "Fita Adesiva",
+      "quantidade": 29,
+      "bloqueado": false
+    },
+    {
+      "id": "m9",
+      "codigo": "ESC-009",
+      "nome": "Post-it 76x76mm",
+      "quantidade": 11,
+      "bloqueado": false
+    },
+    {
+      "id": "m10",
+      "codigo": "ESC-010",
+      "nome": "Marcador de Texto",
+      "quantidade": 42,
+      "bloqueado": false
+    },
+    {
+      "id": "m11",
+      "codigo": "ESC-011",
+      "nome": "Clips 4/0 Galvanizado",
+      "quantidade": 23,
+      "bloqueado": false
+    },
+    {
+      "id": "m12",
+      "codigo": "ESC-012",
+      "nome": "Envelope A4 Branco",
+      "quantidade": 0,
+      "bloqueado": true
+    },
+    {
+      "codigo": "ESC-014",
+      "nome": "Lalulu",
+      "quantidade": 0,
+      "bloqueado": false,
+      "id": "a_N1dWpV7GY"
+    }
+  ],
+  "retiradas": [
+    {
+      "id": "r1",
+      "funcionarioId": "f1",
+      "materialId": "m1",
+      "quantidade": 5,
+      "data": "2026-11-03T13:20:00.000Z"
+    },
+    {
+      "id": "r2",
+      "funcionarioId": "f2",
+      "materialId": "m2",
+      "quantidade": 2,
+      "data": "2026-11-04T15:05:00.000Z"
+    },
+    {
+      "id": "r3",
+      "funcionarioId": "f1",
+      "materialId": "m5",
+      "quantidade": 1,
+      "data": "2026-11-05T12:40:00.000Z"
+    },
+    {
+      "funcionarioId": "qWULVgy-v_o",
+      "materialId": "a_N1dWpV7GY",
+      "quantidade": 13,
+      "data": "2026-11-09T01:40:39.306Z",
+      "id": "RtQKaDck1Sk"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
