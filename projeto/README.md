@@ -25,7 +25,7 @@ A aplicação deixou de guardar os dados no `localStorage` do navegador. Agora
 funcionários, materiais e retiradas são consultados, cadastrados, alterados e
 excluídos por requisições HTTP a uma API REST fornecida pelo **JSON Server**.
 
-> Branch desta atividade: `capitulo-7-api-rest` (criada a partir de `frontend-v4`).
+> Branch desta atividade: `frontend-v6` (criada a partir de `apitulo-7-api-rest`).
 
 ### Como executar
 
