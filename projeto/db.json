@@ -47,12 +47,6 @@
       "matricula": "FUNC-008",
       "nome": "Fernanda Souza",
       "bloqueado": false
-    },
-    {
-      "matricula": "FUNC-009",
-      "nome": "João de Barro",
-      "bloqueado": false,
-      "id": "qWULVgy-v_o"
     }
   ],
   "materiais": [
@@ -139,13 +133,6 @@
       "nome": "Envelope A4 Branco",
       "quantidade": 0,
       "bloqueado": true
-    },
-    {
-      "codigo": "ESC-014",
-      "nome": "Lalulu",
-      "quantidade": 0,
-      "bloqueado": false,
-      "id": "a_N1dWpV7GY"
     }
   ],
   "retiradas": [
@@ -169,13 +156,6 @@
       "materialId": "m5",
       "quantidade": 1,
       "data": "2026-11-05T12:40:00.000Z"
-    },
-    {
-      "funcionarioId": "qWULVgy-v_o",
-      "materialId": "a_N1dWpV7GY",
-      "quantidade": 13,
-      "data": "2026-11-09T01:40:39.306Z",
-      "id": "RtQKaDck1Sk"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
