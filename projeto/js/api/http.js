@@ -4,8 +4,10 @@
 // Qualquer falha (rede indisponível, resposta HTTP de erro, JSON inválido)
 // é convertida em um ApiError com mensagem compreensível para o usuário.
 
-// Endereço do JSON Server. Altere aqui se a API rodar em outra porta/host.
-export const URL_BASE = globalThis.ESTOKA_API_URL ?? "http://localhost:3000";
+// Endereço da API. Por padrão usa a mesma origem que serviu a página (o próprio
+// servidor Flask). O override ESTOKA_API_URL é usado pelos testes automatizados.
+export const URL_BASE =
+    globalThis.ESTOKA_API_URL ?? globalThis.location?.origin ?? "http://localhost:5000";
 
 export class ApiError extends Error {
     constructor(mensagem, { status = null, causa = null } = {}) {
@@ -48,7 +50,7 @@ export async function requisicao(caminho, { metodo = "GET", corpo, parametros } 
         resposta = await fetch(url, configuracao);
     } catch (erro) {
         throw new ApiError(
-            "Não foi possível se comunicar com o servidor. Verifique se o JSON Server está em execução.",
+            "Não foi possível se comunicar com o servidor. Verifique se o servidor Flask está em execução.",
             { causa: erro }
         );
     }

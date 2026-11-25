@@ -47,6 +47,12 @@
       "matricula": "FUNC-008",
       "nome": "Fernanda Souza",
       "bloqueado": false
+    },
+    {
+      "matricula": "FUNC - 067",
+      "nome": "creito",
+      "bloqueado": false,
+      "id": "fozhalyl"
     }
   ],
   "materiais": [
@@ -117,7 +123,7 @@
       "id": "m10",
       "codigo": "ESC-010",
       "nome": "Marcador de Texto",
-      "quantidade": 42,
+      "quantidade": 41,
       "bloqueado": false
     },
     {
@@ -133,6 +139,20 @@
       "nome": "Envelope A4 Branco",
       "quantidade": 0,
       "bloqueado": true
+    },
+    {
+      "codigo": "ESC-067",
+      "nome": "creito farmador de aura",
+      "quantidade": 0,
+      "bloqueado": false,
+      "id": "o5xvc0lp"
+    },
+    {
+      "codigo": "esc- 009",
+      "nome": "fulano",
+      "quantidade": 3,
+      "bloqueado": false,
+      "id": "c80lx2by"
     }
   ],
   "retiradas": [
@@ -156,6 +176,20 @@
       "materialId": "m5",
       "quantidade": 1,
       "data": "2026-11-05T12:40:00.000Z"
+    },
+    {
+      "funcionarioId": "f6",
+      "materialId": "o5xvc0lp",
+      "quantidade": 3,
+      "data": "2026-11-25T02:39:47.113Z",
+      "id": "dxk1a9r0"
+    },
+    {
+      "funcionarioId": "fozhalyl",
+      "materialId": "m10",
+      "quantidade": 1,
+      "data": "2026-11-25T02:40:10.086Z",
+      "id": "pbsb8e0c"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
